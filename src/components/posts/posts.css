@@ -1,0 +1,6 @@
+.posts-grid {
+    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 410px);
+    justify-content: space-between;
+}

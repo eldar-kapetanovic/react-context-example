@@ -1,0 +1,9 @@
+packages/*
+packages/npm-container/*
+packages/npm-container/.npm/*
+packages/npm-container/.npm/package/*
+.idea
+node_modules
+.vscode
+/bundle
+/devBundle

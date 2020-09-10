@@ -1,0 +1,48 @@
+.post-card {
+    display: flex;
+    flex-flow: column;
+    max-width: 390px;
+    margin: 0.8rem;
+    height: calc(100% - 1.64rem);
+}
+
+.post-content {
+    flex: 1 1 auto;
+}
+
+.post-header-image {
+    background-size: cover;
+}
+
+.post-empty-space {
+    flex: 1 1 auto;
+}
+
+.post-navigation {
+    color: black;
+    text-decoration: none;
+}
+
+.post-navigation:hover {
+    text-decoration: underline;
+}
+
+.post-commands {
+    justify-content: flex-end;
+}
+
+.post-commands button:not(:last-child) {
+    margin-right: 0.8rem;
+}
+
+.post-link {
+    cursor: pointer;
+}
+
+.post-link:hover .mat-card-title, .post-link:hover .mat-card-subtitle {
+    text-decoration: underline;
+}
+
+.post-edit {
+    text-decoration: none;
+}

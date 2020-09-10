@@ -1,0 +1,15 @@
+.loginDialogContent {
+    width: 370px;
+}
+
+.formLine {
+    display: block;
+    width: 350px;
+    margin: 0 10px 10px 10px;
+}
+
+.errorMessage {
+    color: red !important;
+    min-height: 55px;
+    margin: 30px 10px 10px !important;
+}

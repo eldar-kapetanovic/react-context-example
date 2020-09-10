@@ -1,0 +1,45 @@
+.toast {
+    border-radius: 5px;
+    height: 50px;
+    line-height: 50px;
+    min-width: 300px;
+    text-align: center;
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.toast.success {
+    color: white;
+    background-color: green;
+}
+
+.toast.error {
+    color: white;
+    background-color: red;
+}
+
+.toast.warning {
+    color: black;
+    background-color: yellow;
+}
+
+.toast.info {
+    color: white;
+    background-color: blue;
+}
+
+.Toaster__alert {
+    display: flex;
+    align-items: center;
+}
+
+.Toaster__alert_close {
+    position: relative;
+    top: 5px;
+    left: -30px;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: white;
+}

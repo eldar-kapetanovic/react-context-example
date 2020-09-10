@@ -1,0 +1,30 @@
+{
+  "short_name": "React App",
+  "name": "React context example",
+  "icons": [
+    {
+      "src": "posts.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "posts16-icon.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "posts32-icon.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "posts76-icon.png",
+      "type": "image/png",
+      "sizes": "76x76"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

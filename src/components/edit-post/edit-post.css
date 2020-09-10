@@ -1,0 +1,25 @@
+.edit-post-card {
+    margin: 2.5rem 0 0;
+}
+
+.edit-post-commands {
+    text-align: right;
+    margin: 2rem 1.5rem 0;
+}
+
+.edit-post-commands button:not(:last-child) {
+    margin-right: 0.8rem;
+}
+
+.edit-post-comments {
+    padding: 0 1rem;
+}
+
+.edit-post-form-line {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.edit-post-form-line .MuiFormControl-root {
+    width: 100%;
+}
