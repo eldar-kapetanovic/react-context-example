@@ -193,7 +193,7 @@ const EditPost = ({ match: { params: { postIndex } } }) => {
         setConfirmDialogModalData({
             visible: true,
             title: "Confirm comment delete.",
-            description: `Are you realy want to delete ${postCopy.comments[commentIndex].name} comment?`,
+            description: `Are you really want to delete ${postCopy.comments[commentIndex].name} comment?`,
             confirmAction: () => {
                 postCopy.comments.splice(commentIndex, 1);
                 updatePost(postCopy);
@@ -361,7 +361,7 @@ const EditPost = ({ match: { params: { postIndex } } }) => {
         </Fragment>
     ) : (
         <Fragment>
-            <h1>Error occured while saving post data.</h1>
+            <h1>Error occurred while saving post data.</h1>
         </Fragment>
     ))) || null;
 }
