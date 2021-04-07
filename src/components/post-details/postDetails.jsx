@@ -1,37 +1,50 @@
-import React, { Fragment, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
 
+import ApiCallsHelper from "../../helpers/apiCallsHelper";
+import ResponseDataParser from "../../helpers/responseDataParser";
+import NavigationLink from "../../primitives/navigation-link/navigationLink";
 import { useAppState } from "../../state/useAppState";
 import "./postDetails.css";
 
-const PostDetails = ({ match: { params: { postIndex } } }) => {
-    const [{ apiPost, authenticated }, { callApiPost, setTitle }] = useAppState();
+const PostDetails = ({ match: { params: { postId } } }) => {
+    const [post, setPost] = useState();
+    const [
+        { apiPost, authenticated, apiCallStatus },
+        { callApiPost, setApplicationTitle, setApiCallStatus },
+    ] = useAppState();
 
     useEffect(() => {
-        setTitle("Post Details");
-        callApiPost(postIndex);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        setApplicationTitle("Post Details");
+        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
+            { callerId: "PostDetails", isComponent: true }
+        ));
+        callApiPost(postId);
     }, []);
 
-    const post = apiPost && apiPost.status === 200 && apiPost.data ? apiPost.data : null;
+    useEffect(() => {
+        if (apiPost && apiCallStatus.ongoing) {
+            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("PostDetails"));
+            setPost(ResponseDataParser.getPostFromResponse(apiPost, postId));
+        }
+    }, [apiPost]);
 
     return post ? (
-        <Fragment>
+        <>
             <Card className="post-details-card">
                 <CardHeader
                     className="width-100"
                     action={authenticated && (
-                        <Link className="post-details-edit" to={`/edit-post/${postIndex}`}>
+                        <NavigationLink className="post-details-edit" to={`/edit-post/${postId}`}>
                             <IconButton aria-label="edit">
                                 <Icon color="primary">edit</Icon>
                             </IconButton>
-                        </Link>
+                        </NavigationLink>
                     )}
                     title="Post"
                 />
@@ -45,8 +58,8 @@ const PostDetails = ({ match: { params: { postIndex } } }) => {
             <Card className="post-details-card">
                 <CardHeader title="Comments" />
                 <CardContent>
-                    {post.comments && post.comments.map((comment, index) => (
-                        <Card key={`comment-${index}`} className="post-details-card">
+                    {post.comments && post.comments.map((comment) => (
+                        <Card key={comment.id} className="post-details-card">
                             <CardHeader title={comment.name} />
                             <CardContent className="post-details-content">
                                 {comment.body}
@@ -55,7 +68,7 @@ const PostDetails = ({ match: { params: { postIndex } } }) => {
                     ))}
                 </CardContent>
             </Card>
-        </Fragment>
+        </>
     ) : null;
 };
 

@@ -1,369 +1,287 @@
 import React, {
-    Fragment,
     useEffect,
+    useRef,
     useState,
 } from "react";
 import PropTypes from "prop-types";
 import toaster from "toasted-notes";
-import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
-import TextField from "@material-ui/core/TextField";
 
-import Toast from "../toast/toast";
+import ApiCallsHelper from "../../helpers/apiCallsHelper";
+import useFormHelper from "../../helpers/formHelper";
+import FormValidationFunctions from "../../helpers/formValidationFunctions";
+import ResponseDataParser from "../../helpers/responseDataParser";
+import TextFieldFormWrapper from "../../primitives/textFieldFormWrapper/textFieldFormWrapper.jsx";
+import ActionButton from "../../primitives/action-button/actionButton.jsx";
+import RouterHelper from "../../router/routerHelper";
+import Toast from "../toast/toast.jsx";
+import EditComment from "../edit-comment/edit-comment";
 import { useAppState } from "../../state/useAppState";
 import "./edit-post.css";
-import RouterHelper from "../../router/routerHelper";
 
-// eslint-disable-next-line complexity
-const EditPost = ({ match: { params: { postIndex } } }) => {
-    const [
-        { apiPost, authenticated, posts, updatePosts },
-        { callApiPost, setTitle, setPosts, setDeletePostModalData, callUpdatePosts, setConfirmDialogModalData },
-    ] = useAppState();
+const EditPost = ({ match: { params: { postId } } }) => {
+    const formHelper = useFormHelper();
+
     const [post, setPost] = useState();
-    const [postErrors, setPostErrors] = useState();
-    const [isFormDisabled, setFormDisabled] = useState(false);
-    const [isSaveError, setSaveError] = useState(false);
+    const [
+        {
+            authenticated,
+            apiCallStatus,
+            apiPost,
+            apiAddPost,
+            apiPatchPost,
+        },
+        {
+            setApplicationTitle,
+            setApiCallStatus,
+            setDeletePostModalData,
+            callApiPost,
+            callApiAddPost,
+            callApiPatchPost,
+        },
+    ] = useAppState();
+    const commentsRef = useRef([]);
+
+    const setFormData = (postData) => {
+        if (postData) {
+            formHelper.onChange("title", postData.title || "", postData.title || "");
+            formHelper.onChange("body", postData.body || "", postData.body || "");
+        }
+    };
+
+    const resetFormData = () => {
+        setFormData(post);
+    };
 
     useEffect(() => {
-        if (postIndex) {
-            setTitle("Edit Post");
-            callApiPost(postIndex);
+        if (postId) {
+            setApplicationTitle("Edit Post");
+            setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
+                { callerId: "EditPost", isComponent: true }
+            ));
+            callApiPost(postId);
         } else {
-            setTitle("Add Post");
+            setApplicationTitle("Add Post");
             setPost({
                 title: "",
                 body: "",
                 comments: [],
             });
-            setPostErrors({
-                title: false,
-                body: false,
-                comments: [],
-            });
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [postIndex]);
+    }, [postId]);
 
     useEffect(() => {
-        if (!postIndex) {
+        if (!postId || !apiCallStatus.ongoing) {
             return;
         }
 
-        if (apiPost && apiPost.status === 200 && apiPost.data) {
-            setPost(JSON.parse(JSON.stringify(apiPost.data)));
-            setPostErrors({
-                title: false,
-                body: false,
-                comments: (apiPost.data.comments || []).map(() => ({ name: false, body: false })),
-            });
-        } else {
-            setPost(null);
+        if (apiPost && apiCallStatus.ongoing) {
+            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("EditPost"));
+            setPost(ResponseDataParser.getPostFromResponse(apiPost, postId));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiPost]);
 
     useEffect(() => {
-        if (updatePosts && updatePosts.status === 200 && updatePosts.data) {
-            setFormDisabled(false);
-            setPosts(updatePosts.data);
-            if (!postIndex && post && post.title && post.body) {
-                RouterHelper.navigateTo(`/edit-post/${updatePosts.data.length - 1}`);
+        resetFormData();
+    }, [post]);
+
+    useEffect(() => {
+        if (apiAddPost && apiCallStatus.ongoing) {
+            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("SavePost"));
+
+            if (apiAddPost.status === 200 && apiAddPost.data) {
+                toaster.notify(
+                    <Toast message="New Post created successfully." />,
+                    { position: "top-right", duration: 2000 }
+                );
+                RouterHelper.navigateTo(`edit-post/${apiAddPost.data.name}`);
             } else {
-                callApiPost(postIndex);
+                toaster.notify(
+                    <Toast message="Error occurred when saving Post data." type="error" />,
+                    { position: "top-right", duration: 2000 }
+                );
             }
-        } else {
-            setSaveError(true);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updatePosts]);
+    }, [apiAddPost]);
 
-    const addPost = (postData) => {
-        const postsCopy = JSON.parse(JSON.stringify(posts));
-        postsCopy.push(postData);
-        setFormDisabled(true);
-        callUpdatePosts(postsCopy);
-    };
+    useEffect(() => {
+        if (apiPatchPost && apiCallStatus.ongoing) {
+            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("SavePost"));
 
-    const updatePost = (postData) => {
-        const postsCopy = JSON.parse(JSON.stringify(posts));
-        postsCopy[postIndex] = postData;
-        setFormDisabled(true);
-        callUpdatePosts(postsCopy);
-    };
-
-    const validateCommentsData = () => {
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-        post.comments.forEach((comment, index) => (
-            postErrorsCopy.comments[index] = { name: !comment.name.trim(), body: !comment.body.trim() }
-        ));
-        setPostErrors(postErrorsCopy);
-        return !(
-            postErrorsCopy.comments.some(commentError => commentError.name || commentError.body)
-        );
-    };
-
-    const validatePostData = () => {
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-        postErrorsCopy.title = !post.title.trim();
-        postErrorsCopy.body = !post.body.trim();
-        post.comments.forEach((comment, index) => (
-            postErrorsCopy.comments[index] = { name: !comment.name.trim(), body: !comment.body.trim() }
-        ));
-        setPostErrors(postErrorsCopy);
-        return !(
-            postErrorsCopy.title ||
-            postErrorsCopy.body ||
-            postErrorsCopy.comments.some(commentError => commentError.name || commentError.body)
-        );
-    };
-
-    const handleChange = (event, element, arrayIndex, arrayElement) => {
-        const postCopy = JSON.parse(JSON.stringify(post));
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-
-        if (arrayIndex == null) {
-            postCopy[element] = event.target.value;
-            postErrorsCopy[element] = false;
-        } else {
-            postCopy[element][arrayIndex][arrayElement] = event.target.value;
-            postErrorsCopy[element][arrayIndex][arrayElement] = false;
+            if (apiPatchPost.status === 200 && apiPatchPost.data) {
+                setFormData(formHelper.getFormData());
+                toaster.notify(
+                    <Toast message="New Post created successfully." />,
+                    { position: "top-right", duration: 2000 }
+                );
+            } else {
+                toaster.notify(
+                    <Toast message="Error occurred when saving Post data." type="error" />,
+                    { position: "top-right", duration: 2000 }
+                );
+            }
         }
-        setPost(postCopy);
-        setPostErrors(postErrorsCopy);
-    };
+    }, [apiPatchPost]);
 
     const handleAddNewComment = () => {
         const postCopy = JSON.parse(JSON.stringify(post));
+
         if (postCopy.comments) {
             postCopy.comments.push({ name: "", body: "" });
         } else {
             postCopy.comments = [{ name: "", body: "" }];
         }
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-        postErrorsCopy.comments.push({ name: false, body: false });
+
         setPost(postCopy);
-        setPostErrors(postErrorsCopy);
     };
 
     const handleDeletePost = () => {
         setDeletePostModalData({
             visible: true,
             postTitle: post.title,
-            postIndex,
+            postId,
         });
-    };
-
-    const handleCancelPost = () => {
-        const postCopy = JSON.parse(JSON.stringify(post));
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-
-        postCopy.title = apiPost.data.title;
-        postCopy.body = apiPost.data.body;
-
-        postErrorsCopy.title = false;
-        postErrorsCopy.body = false;
-
-        setPost(postCopy);
-        setPostErrors(postErrorsCopy);
     };
 
     const handleSavePost = () => {
-        if (!validatePostData()) {
+        const postValid = formHelper.validateFormData();
+        const commentsValid = commentsRef.current.every((commentReference) => (
+            commentReference.validateComment()
+        ));
+
+        if (!postValid || !commentsValid) {
             toaster.notify(
                 <Toast message="Please fix errors." type="error" />,
                 { position: "top-right", duration: 1500 }
             );
             return;
         }
-        if (postIndex == null) {
-            addPost(post);
+
+        const newPostData = JSON.parse(JSON.stringify(formHelper.getFormData()));
+
+        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
+            { callerId: "SavePost", isComponent: false }
+        ));
+
+        if (postId == null) {
+            newPostData.timestamp = "{{$timestamp}}";
+            callApiAddPost(newPostData);
         } else {
-            updatePost(post);
+            commentsRef.current.forEach((commentReference) => {
+                commentReference.saveComment();
+            });
+            callApiPatchPost(postId, newPostData);
         }
     };
 
-    const handleDeleteComment = (commentIndex) => {
+    const deleteComment = (commentIndex) => {
         const postCopy = JSON.parse(JSON.stringify(post));
-        setConfirmDialogModalData({
-            visible: true,
-            title: "Confirm comment delete.",
-            description: `Are you really want to delete ${postCopy.comments[commentIndex].name} comment?`,
-            confirmAction: () => {
-                postCopy.comments.splice(commentIndex, 1);
-                updatePost(postCopy);
-                setPost(postCopy);
-            },
-        });
-    };
-
-    const handleCancelComment = (commentIndex) => {
-        if ((apiPost.data.comments || []).length <= commentIndex) {
-            return;
-        }
-        const postCopy = JSON.parse(JSON.stringify(post));
-        const postErrorsCopy = JSON.parse(JSON.stringify(postErrors));
-        postCopy.comments[commentIndex] = {
-            name: apiPost.data.comments[commentIndex].name,
-            body: apiPost.data.comments[commentIndex].body,
-        };
-        postErrorsCopy.comments[commentIndex] = {
-            name: false,
-            body: false,
-        };
+        postCopy.comments.splice(commentIndex, 1);
+        commentsRef.current.splice(commentIndex, 1);
         setPost(postCopy);
-        setPostErrors(postErrorsCopy);
+
+        toaster.notify(
+            <Toast message="Comment deleted successfully." />,
+            { position: "top-right", duration: 2000 }
+        );
     };
 
-    const handleSaveComments = () => {
-        if (!validateCommentsData()) {
+    const handleDeleteComment = (commentIndex, apiCall) => {
+        if (!apiCall && !post.comments[commentIndex].id) {
+            deleteComment(commentIndex);
+        }
+        else if (apiCall && apiCall.status === 200) {
+            deleteComment(commentIndex);
+        } else {
             toaster.notify(
-                <Toast message="Please fix errors." type="error" />,
-                { position: "top-right", duration: 1500 }
+                <Toast message="Error occurred when deleting comment." type="error" />,
+                { position: "top-right", duration: 2000 }
             );
-            return;
         }
-
-        const postCopy = JSON.parse(JSON.stringify(apiPost.data));
-        postCopy.comments = JSON.parse(JSON.stringify(post.comments));
-        updatePost(postCopy);
-        setPost(postCopy);
     };
 
-    return (post && authenticated && (isSaveError ? (
-        <Fragment>
+    return (post && authenticated && (
+        <>
             <Card className="edit-post-card">
                 <CardHeader className="width-100" title="Post" />
                 <CardContent className="edit-post-content">
                     <div className="edit-post-form-line">
-                        <TextField
+                        <TextFieldFormWrapper
                             label="Title"
-                            value={post.title}
-                            disabled={isFormDisabled}
-                            helperText={postErrors.title === true ? "Data is required." : ""}
-                            error={postErrors.title === true}
-                            onChange={(event) => handleChange(event, "title")}
+                            initialData={post}
+                            disabled={apiCallStatus.ongoing}
+                            elementName="title"
+                            validatorFunctions={[FormValidationFunctions.getRequiredValidator()]}
+                            formHelper={formHelper}
                         />
                     </div>
                     <div className="edit-post-form-line">
-                        <TextField
+                        <TextFieldFormWrapper
                             label="Post"
-                            value={post.body}
                             multiline
-                            disabled={isFormDisabled}
-                            helperText={postErrors.body === true ? "Data is required." : ""}
-                            error={postErrors.body === true}
-                            onChange={(event) => handleChange(event, "body")}
+                            initialData={post}
+                            disabled={apiCallStatus.ongoing}
+                            elementName="body"
+                            validatorFunctions={[FormValidationFunctions.getRequiredValidator()]}
+                            formHelper={formHelper}
                         />
                     </div>
                 </CardContent>
                 <CardActions className="post-commands">
-                    <Button
-                        variant="outlined"
+                    <ActionButton
+                        actionName={`deletePost${postId}`}
+                        text="DELETE"
                         color="secondary"
-                        disabled={isFormDisabled || postIndex == null}
+                        disabled={postId == null}
                         onClick={handleDeletePost}
-                    >
-                        DELETE
-                    </Button>
-                    <Button
-                        variant="outlined"
+                    />
+                    <ActionButton
+                        text="CANCEL"
                         color="default"
-                        disabled={isFormDisabled}
-                        onClick={handleCancelPost}
-                    >
-                        CANCEL
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        disabled={isFormDisabled}
+                        disabled={!formHelper.hasChanges()}
+                        onClick={resetFormData}
+                    />
+                    <ActionButton
+                        actionName="SavePost"
+                        text="SAVE"
+                        disabled={!formHelper.hasChanges()}
                         onClick={handleSavePost}
-                    >
-                        SAVE
-                    </Button>
+                    />
                 </CardActions>
             </Card>
-            <Card className="edit-post-card">
+            {<Card className="edit-post-card">
                 <CardHeader
                     title="Comments" 
                     action={(
                         <IconButton
                             aria-label="add"
-                            disabled={isFormDisabled || postIndex == null}
+                            disabled={postId == null}
                             onClick={handleAddNewComment}
                         >
-                            <Icon color={(isFormDisabled || postIndex == null) ? "disabled" : "primary"}>add_circle</Icon>
+                            <Icon color={(postId == null) ? "disabled" : "primary"}>add_circle</Icon>
                         </IconButton>
                     )}
                 />
                 <CardContent>
-                    {post.comments && post.comments.map((comment, index) => (
-                        <Card key={`comment-${index}`} className="edit-post-card edit-post-comments">
-                            <CardContent>
-                                <div className="edit-post-form-line">
-                                    <TextField
-                                        label="Title"
-                                        value={comment.name}
-                                        disabled={isFormDisabled}
-                                        helperText={postErrors.comments[index].name === true ? "Data is required." : ""}
-                                        error={postErrors.comments[index].name === true}
-                                        onChange={event => handleChange(event, "comments", index, "name")}
-                                    />
-                                </div>
-                                <div className="edit-post-form-line">
-                                    <TextField
-                                        label="Comment"
-                                        value={comment.body}
-                                        multiline
-                                        disabled={isFormDisabled}
-                                        helperText={postErrors.comments[index].body === true ? "Data is required." : ""}
-                                        error={postErrors.comments[index].body === true}
-                                        onChange={event => handleChange(event, "comments", index, "body")}
-                                    />
-                                </div>
-                            </CardContent>
-                            <CardActions className="post-commands">
-                                <Button
-                                    variant="outlined"
-                                    color="secondary"
-                                    disabled={isFormDisabled}
-                                    onClick={() => handleDeleteComment(index)}
-                                >
-                                    DELETE
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="default"
-                                    disabled={isFormDisabled}
-                                    onClick={() => handleCancelComment(index)}
-                                >
-                                    CANCEL
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="primary"
-                                    disabled={isFormDisabled}
-                                    onClick={handleSaveComments}
-                                >
-                                    SAVE
-                                </Button>
-                            </CardActions>
-                        </Card>
+                    {postId && post.comments && post.comments.map((comment, index) => (
+                        <EditComment
+                            ref={el => { commentsRef.current[index] = el; }}
+                            key={comment.id || `editComment${index}`}
+                            postId={postId}
+                            commentIndex={index}
+                            commentData={comment}
+                            onDeleteComment={handleDeleteComment.bind(this, index)}
+                        />
                     ))}
                 </CardContent>
-            </Card>
-        </Fragment>
-    ) : (
-        <Fragment>
-            <h1>Error occurred while saving post data.</h1>
-        </Fragment>
-    ))) || null;
+            </Card>}
+        </>)
+    ) || null;
 }
 
 EditPost.propTypes = {

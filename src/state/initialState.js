@@ -3,13 +3,14 @@ import ApiCalls from "./apiCalls";
 const initialState = {
     isReady: false,
     authenticated: false,
-    title: "Posts List",
+    applicationTitle: "Posts List",
     showExport: false,
     posts: [],
     loginModalVisible: false,
     logoutModalVisible: false,
     deletePostModalData: { visible: false },
     confirmDialogModalData: { visible: false },
+    apiCallStatus: { ongoing: false, calls: [] },
 };
 
 const getApiFunctions = () => {

@@ -1,39 +1,28 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
+import React, { useEffect } from "react";
 
-import { useEffect } from "react";
+import ResponseDataParser from "../../helpers/responseDataParser";
 import { useAppState } from "../../state/useAppState";
 import Post from "../post/post";
 import "./posts.css";
 
 const Posts = () => {
-    const [{ posts, apiPosts, updatePosts }, { setPosts, setTitle, setShowExport }] = useAppState();
+    const [{ posts, apiPosts }, { setPosts, setApplicationTitle, setShowExport }] = useAppState();
 
     useEffect(() => {
-        setTitle("Posts List");
+        setApplicationTitle("Posts List");
         setShowExport(true);
         return () => setShowExport(false);
     }, []);
 
     useEffect(() => {
-        if (apiPosts &&
-            apiPosts.status === 200 &&
-            Array.isArray(apiPosts.data)) {
-            setPosts(apiPosts.data);
+        if (apiPosts) {
+            setPosts(ResponseDataParser.getPostsFromResponse(apiPosts));
         }
     }, [apiPosts]);
 
-    useEffect(() => {
-        if (updatePosts &&
-            updatePosts.status === 200 &&
-            Array.isArray(updatePosts.data)) {
-            setPosts(updatePosts.data);
-        }
-    }, [updatePosts]);
-
     return (
         <div className="posts-grid">
-            {posts.map((post, index) => post && <Post key={`post-${index}`} id={index} post={post} />)}
+            {posts.map((post, index) => post && <Post key={post.id} post={post} />)}
         </div>
     );
 };

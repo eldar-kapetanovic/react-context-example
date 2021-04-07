@@ -17,3 +17,13 @@
     box-shadow: 0 2px 5px lightgrey;
     padding: 15px 0 25px;
 }
+
+.app-button-progress {
+    position: absolute;
+    left: calc(50% - 12px);
+    top: calc(50% - 12px);
+}
+
+.app-disabled-link {
+    pointer-events: none;
+}

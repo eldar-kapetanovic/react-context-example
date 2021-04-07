@@ -1,6 +1,5 @@
 import axios from "axios";
-import * as firebase from "firebase/app";
-import "firebase/auth";
+import ApiCallsHelper from "../helpers/apiCallsHelper";
 
 const apiRoot = "https://test-423cd.firebaseio.com/posts";
 
@@ -15,33 +14,93 @@ export default class ApiCalls {
         });
     }
 
-    apiPost(postIndex) {
+    apiPost(postId) {
         return axios({
-            url: `${apiRoot}/${postIndex}.json`,
+            url: `${apiRoot}/${postId}.json`,
             method: "GET",
             timeout: defaultTimeout,
         });
     }
 
-    updatePosts(posts) {
-        if (firebase.auth().currentUser) {
-            return new Promise((resolve, reject) => {
-                firebase.auth().currentUser.getIdToken()
-                    .then(authToken => axios({
-                        url: `${apiRoot}.json`,
-                        method: "PUT",
-                        timeout: defaultTimeout,
-                        data: posts,
-                        params: {
-                            auth: authToken,
-                        },
-                    }))
-                    .then(resolve)
-                    .catch(reject)
-            });
-        }
-        return new Promise((resolve, reject) => {
-            reject(new Error("unauthorized access!"));
-        });
+    apiAddPost(postData) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}.json`,
+                method: "POST",
+                timeout: defaultTimeout,
+                data: postData,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
+    }
+
+    apiPatchPost(postId, postData) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}/${postId}.json`,
+                method: "PATCH",
+                timeout: defaultTimeout,
+                data: postData,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
+    }
+
+    apiDeletePost(postId) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}/${postId}.json`,
+                method: "DELETE",
+                timeout: defaultTimeout,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
+    }
+
+    apiAddComment(postId, commentData) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}/${postId}/comments.json`,
+                method: "POST",
+                timeout: defaultTimeout,
+                data: commentData,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
+    }
+
+    apiPatchComment(postId, commentId, commentData) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}/${postId}/comments/${commentId}.json`,
+                method: "PATCH",
+                timeout: defaultTimeout,
+                data: commentData,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
+    }
+
+    apiDeleteComment(postId, commentId) {
+        return ApiCallsHelper.createAuthenticatedApiCall(
+            (authToken) => axios({
+                url: `${apiRoot}/${postId}/comments/${commentId}.json`,
+                method: "DELETE",
+                timeout: defaultTimeout,
+                params: {
+                    auth: authToken,
+                },
+            })
+        );
     }
 }

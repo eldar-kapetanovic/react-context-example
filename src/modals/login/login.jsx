@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -8,11 +7,16 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
 import * as firebase from "firebase/app";
 
+import ApiCallsHelper from "../../helpers/apiCallsHelper";
+import ActionButton from "../../primitives/action-button/actionButton";
 import { useAppState } from "../../state/useAppState";
 import "./login.css";
 
 const Login = () => {
-    const [{ loginModalVisible }, { setLoginModalVisible }] = useAppState();
+    const [
+        { loginModalVisible, apiCallStatus },
+        { setLoginModalVisible, setApiCallStatus },
+    ] = useAppState();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [usernameError, setUsernameError] = useState(" ");
@@ -58,9 +62,19 @@ const Login = () => {
             return;
         }
 
+        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
+            { callerId: "Login", isComponent: false }
+        ));
         firebase.auth().signInWithEmailAndPassword(username, password)
-            .then(() => setLoginModalVisible(false))
-            .catch((error) => setErrorMessage(error.message));
+            .then(() => {
+                setLoginModalVisible(false);
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+            })
+            .finally(() => {
+                setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("Login"));
+            });
     };
 
     return (
@@ -86,6 +100,7 @@ const Login = () => {
                         helperText={usernameError}
                         value={username}
                         onChange={handleUsernameChange}
+                        disabled={apiCallStatus.ongoing}
                     />
                 </div>
                 <div className="formLine">
@@ -99,6 +114,7 @@ const Login = () => {
                         helperText={passwordError}
                         value={password}
                         onChange={handlePasswordChange}
+                        disabled={apiCallStatus.ongoing}
                     />
                 </div>
                 <DialogContentText className="errorMessage">
@@ -106,12 +122,8 @@ const Login = () => {
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => setLoginModalVisible(false)}  variant="outlined" color="default">
-                    Cancel
-                </Button>
-                <Button onClick={handleLogin}  variant="outlined" color="primary">
-                    Login
-                </Button>
+                <ActionButton text="Cancel" color="default" onClick={() => setLoginModalVisible(false)} />
+                <ActionButton actionName="Login" text="Login" onClick={handleLogin} />
             </DialogActions>
         </Dialog>
     );

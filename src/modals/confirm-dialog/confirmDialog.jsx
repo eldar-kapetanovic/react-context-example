@@ -1,11 +1,11 @@
 import React from "react";
-import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import ActionButton from "../../primitives/action-button/actionButton";
 import { useAppState } from "../../state/useAppState";
 
 const ConfirmDialog = () => {
@@ -34,12 +34,17 @@ const ConfirmDialog = () => {
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => setConfirmDialogModalData({ visible: false })}  variant="outlined" color="default">
-                    Cancel
-                </Button>
-                <Button onClick={handleConfirmAction}  variant="outlined" color="secondary">
-                    Confirm
-                </Button>
+                <ActionButton
+                    text="Cancel"
+                    color="default"
+                    actionName={confirmDialogModalData.confirmActionName}
+                    onClick={() => setConfirmDialogModalData({ visible: false })}
+                />
+                <ActionButton
+                    text="Confirm"
+                    color="secondary"
+                    onClick={handleConfirmAction}
+                />
             </DialogActions>
         </Dialog>
     );

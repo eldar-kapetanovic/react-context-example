@@ -6,6 +6,7 @@ import Login from "../modals/login/login.jsx";
 import Logout from "../modals/logout/logout.jsx";
 import DeletePost from "../modals/delete-post/deletePost.jsx";
 import ConfirmDialog from "../modals/confirm-dialog/confirmDialog.jsx";
+import ComponentLoader from "../components/componentLoader/componentLoader.jsx";
 
 const withTopBarLayout = component => (
     <div className="app-container">
@@ -19,6 +20,7 @@ const withTopBarLayout = component => (
         <Logout />
         <DeletePost />
         <ConfirmDialog />
+        <ComponentLoader />
     </div>
 );
 
