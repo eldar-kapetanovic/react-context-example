@@ -72,6 +72,7 @@ const EditPost = ({ match: { params: { postId } } }) => {
                 body: "",
                 comments: [],
             });
+            commentsRef.current = [];
         }
     }, [postId]);
 
@@ -169,7 +170,9 @@ const EditPost = ({ match: { params: { postId } } }) => {
         ));
 
         if (postId == null) {
-            newPostData.timestamp = "{{$timestamp}}";
+            newPostData.timestamp = {
+                ".sv":"timestamp",
+            };
             callApiAddPost(newPostData);
         } else {
             commentsRef.current.forEach((commentReference) => {

@@ -87,7 +87,9 @@ const EditComment = forwardRef(({ postId, commentIndex, commentData, onDeleteCom
         ));
 
         if (!comment.id) {
-            newCommentData.timestamp = "{{$timestamp}}";
+            newCommentData.timestamp = {
+                ".sv":"timestamp",
+            };
             callApiAddComment(postId, newCommentData);
         } else {
             callApiPatchComment(postId, comment.id, newCommentData);

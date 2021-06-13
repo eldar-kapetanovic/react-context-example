@@ -1,7 +1,7 @@
 import axios from "axios";
 import ApiCallsHelper from "../helpers/apiCallsHelper";
 
-const apiRoot = "https://test-423cd.firebaseio.com/posts";
+const apiRoot = "https://posts-249e3.firebaseio.com/posts";
 
 const defaultTimeout = 8000;
 

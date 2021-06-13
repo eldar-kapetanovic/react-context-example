@@ -21,7 +21,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [usernameError, setUsernameError] = useState(" ");
     const [passwordError, setPasswordError] = useState(" ");
-    const [errorMessage, setErrorMessage] = useState("test");
+    const [errorMessage, setErrorMessage] = useState(" ");
 
     useEffect(() => {
         if (loginModalVisible === false) {

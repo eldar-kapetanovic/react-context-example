@@ -14,9 +14,9 @@ const App = () => {
     useEffect(() => {
         if (firebase.apps.length === 0) {
             firebase.initializeApp({
-                apiKey: "AIzaSyCA40Gmnu_Uv2bFVPE7XE2RVtggfWsfokY",
-                authDomain: "test-423cd.firebaseapp.com",
-                databaseURL: "https://test-423cd.firebaseio.com",
+                apiKey: "AIzaSyBnWUzCReEth6a78WBTAHkfVMvUDnHmwFA",
+                authDomain: "posts-249e3.firebaseapp.com",
+                databaseURL: "https://posts-249e3.firebaseio.com",
                 storageBucket: "bucket.appspot.com",
             });
             firebase.auth().onAuthStateChanged(
@@ -32,7 +32,7 @@ const App = () => {
                 }
             );
 
-            const postsDataReference = firebase.database().ref("test");
+            const postsDataReference = firebase.database().ref("posts");
             let postsData = postsDataReference.orderByChild("timestamp").limitToFirst(100);
             postsData.on("value", (snapshot) => {
                 setPosts(ResponseDataParser.getPostsFromData(snapshot.val()));
