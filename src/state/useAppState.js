@@ -6,11 +6,19 @@ import React, {
 import PropTypes from "prop-types";
 import { initialState, apiCalls } from "./initialState";
 
-const setStateReducer = (prevState, updatedProperty) => ({
-    ...prevState,
-    ...updatedProperty,
-});
+const setStateReducer = (prevState, value) => {
+    if (typeof value === "function") {
+        return value(prevState);
+    }
+
+    return {
+        ...prevState,
+        ...value,
+    };
+};
+
 const AppContext = createContext([]);
+
 const AppStateConsumer = AppContext.Consumer;
 
 const useAppState = () => useContext(AppContext);
@@ -26,7 +34,9 @@ const AppStateProvider = ({ children }) => {
     const [state, setState] = useReducer(setStateReducer, { ...initialState, ...apiCallsState});
     const actions = {};
     Object.keys(initialState).forEach((item) => {
-        actions[`set${capitalizeFirstLetter(item)}`] = value => setState({ [item]: value });
+        actions[`set${capitalizeFirstLetter(item)}`] = (value) => (
+            setState(typeof value === "function" ? value : { [item]: value })
+        );
     });
     Object.entries(apiCalls).forEach(([key, apiFunction]) => {
         if (typeof apiFunction === "function") {

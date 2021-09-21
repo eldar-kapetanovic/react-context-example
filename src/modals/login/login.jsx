@@ -62,9 +62,13 @@ const Login = () => {
             return;
         }
 
-        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-            { callerId: "Login", isComponent: false }
-        ));
+        setApiCallStatus((state) => ({
+            ...state,
+            apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                state.apiCallStatus,
+                { callerId: "Login", isComponent: false }
+            ),
+        }));
         firebase.auth().signInWithEmailAndPassword(username, password)
             .then(() => {
                 setLoginModalVisible(false);
@@ -73,7 +77,13 @@ const Login = () => {
                 setErrorMessage(error.message);
             })
             .finally(() => {
-                setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("Login"));
+                setApiCallStatus((state) => ({
+                    ...state,
+                    apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                        state.apiCallStatus,
+                        "Login"
+                    ),
+                }));
             });
     };
 

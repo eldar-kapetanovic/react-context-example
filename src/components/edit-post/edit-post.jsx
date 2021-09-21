@@ -61,9 +61,13 @@ const EditPost = ({ match: { params: { postId } } }) => {
     useEffect(() => {
         if (postId) {
             setApplicationTitle("Edit Post");
-            setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-                { callerId: "EditPost", isComponent: true }
-            ));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                    state.apiCallStatus,
+                    { callerId: "EditPost", isComponent: true }
+                ),
+            }));
             callApiPost(postId);
         } else {
             setApplicationTitle("Add Post");
@@ -82,7 +86,13 @@ const EditPost = ({ match: { params: { postId } } }) => {
         }
 
         if (apiPost && apiCallStatus.ongoing) {
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("EditPost"));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    "EditPost"
+                ),
+            }));
             setPost(ResponseDataParser.getPostFromResponse(apiPost, postId));
         }
     }, [apiPost]);
@@ -93,7 +103,13 @@ const EditPost = ({ match: { params: { postId } } }) => {
 
     useEffect(() => {
         if (apiAddPost && apiCallStatus.ongoing) {
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("SavePost"));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    "SavePost"
+                ),
+            }));
 
             if (apiAddPost.status === 200 && apiAddPost.data) {
                 toaster.notify(
@@ -112,7 +128,13 @@ const EditPost = ({ match: { params: { postId } } }) => {
 
     useEffect(() => {
         if (apiPatchPost && apiCallStatus.ongoing) {
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("SavePost"));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    "SavePost"
+                ),
+            }));
 
             if (apiPatchPost.status === 200 && apiPatchPost.data) {
                 setFormData(formHelper.getFormData());
@@ -165,9 +187,13 @@ const EditPost = ({ match: { params: { postId } } }) => {
 
         const newPostData = JSON.parse(JSON.stringify(formHelper.getFormData()));
 
-        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-            { callerId: "SavePost", isComponent: false }
-        ));
+        setApiCallStatus((state) => ({
+            ...state,
+            apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                state.apiCallStatus,
+                { callerId: "SavePost", isComponent: false }
+            ),
+        }));
 
         if (postId == null) {
             newPostData.timestamp = {

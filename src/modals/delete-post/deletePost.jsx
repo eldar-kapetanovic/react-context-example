@@ -22,9 +22,13 @@ const DeletePost = () => {
         if (apiDeletePost && apiCallStatus.ongoing) {
             const postId = deletePostModalData.postId;
             setDeletePostModalData({ visible: false });
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus(
-                `DeletePost${deletePostModalData.postId}`
-            ));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    `DeletePost${deletePostModalData.postId}`
+                ),
+            }));
 
             if (apiDeletePost.status === 200) {
                 const postsCopy = JSON.parse(JSON.stringify(posts));
@@ -51,9 +55,13 @@ const DeletePost = () => {
 
     const handleDeletePost = () => {
         if (authenticated === true && deletePostModalData.postId) {
-            setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-                { callerId: `DeletePost${deletePostModalData.postId}`, isComponent: false }
-            ));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                    state.apiCallStatus,
+                    { callerId: `DeletePost${deletePostModalData.postId}`, isComponent: false }
+                ),
+            }));
             callApiDeletePost(deletePostModalData.postId);
         }
     };

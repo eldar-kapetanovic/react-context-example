@@ -19,51 +19,58 @@ class ApiCallsHelper {
         });
     }
 
-    addApiCallToStatus(newApiCall) {
-        if (!(
-            newApiCall &&
+    addApiCallToStatus(apiCallStatus, newApiCall) {
+        let newApiCallStatus = JSON.parse(JSON.stringify(
+            apiCallStatus || initialState.apiCallStatus
+        ));
+
+        if (!(newApiCall &&
             typeof newApiCall.callerId === "string" &&
             typeof newApiCall.isComponent === "boolean"
         )) {
-            this.apiCallStatus = this.apiCallStatus || initialState.apiCallStatus;
-            return this.apiCallStatus;
+            return newApiCallStatus;
         }
 
-        this.apiCallStatus = JSON.parse(JSON.stringify({
+        newApiCallStatus = JSON.parse(JSON.stringify({
             ...initialState.apiCallStatus,
-            ...this.apiCallStatus,
+            ...newApiCallStatus,
             ongoing: true,
         }));
-        this.apiCallStatus.calls.push({ callerId: newApiCall.callerId, isComponent: newApiCall.isComponent });
+        newApiCallStatus.calls.push(
+            { callerId: newApiCall.callerId, isComponent: newApiCall.isComponent }
+        );
 
-        return this.apiCallStatus;
+        return newApiCallStatus;
     }
 
-    removeApiCallFromStatus(callerId) {
+    removeApiCallFromStatus(apiCallStatus, callerId) {
+        let newApiCallStatus = JSON.parse(JSON.stringify(
+            apiCallStatus || initialState.apiCallStatus
+        ));
+
         if (typeof callerId !== "string") {
-            this.apiCallStatus = this.apiCallStatus || initialState.apiCallStatus;
-            return this.apiCallStatus;
+            return newApiCallStatus;
         }
 
-        this.apiCallStatus = JSON.parse(JSON.stringify({
+        newApiCallStatus = JSON.parse(JSON.stringify({
             ...initialState.apiCallStatus,
-            ...this.apiCallStatus,
+            ...newApiCallStatus,
         }));
-        const callIndex = this.apiCallStatus.calls.findIndex(
+        const callIndex = newApiCallStatus.calls.findIndex(
             (call) => call.callerId === callerId
         );
 
         if (callIndex < 0) {
-            return this.apiCallStatus;
+            return newApiCallStatus;
         }
 
-        this.apiCallStatus.calls.splice(callIndex, 1);
+        newApiCallStatus.calls.splice(callIndex, 1);
 
-        if (this.apiCallStatus.calls.length === 0) {
-            this.apiCallStatus.ongoing = false;
+        if (newApiCallStatus.calls.length === 0) {
+            newApiCallStatus.ongoing = false;
         }
 
-        return this.apiCallStatus;
+        return newApiCallStatus;
     }
 }
 

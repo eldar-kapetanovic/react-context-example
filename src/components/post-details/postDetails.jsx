@@ -21,15 +21,25 @@ const PostDetails = ({ match: { params: { postId } } }) => {
 
     useEffect(() => {
         setApplicationTitle("Post Details");
-        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-            { callerId: "PostDetails", isComponent: true }
-        ));
+        setApiCallStatus((state) => ({
+            ...state,
+            apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                state.apiCallStatus,
+                { callerId: "PostDetails", isComponent: true }
+            ),
+        }));
         callApiPost(postId);
     }, []);
 
     useEffect(() => {
         if (apiPost && apiCallStatus.ongoing) {
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus("PostDetails"));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    "PostDetails"
+                ),
+            }));
             setPost(ResponseDataParser.getPostFromResponse(apiPost, postId));
         }
     }, [apiPost]);

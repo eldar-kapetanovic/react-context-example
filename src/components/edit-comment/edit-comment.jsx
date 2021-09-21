@@ -55,9 +55,13 @@ const EditComment = forwardRef(({ postId, commentIndex, commentData, onDeleteCom
             confirmActionName: `DeleteComment${comment.id || commentIndex}`,
             confirmAction: () => {
                 if (comment.id) {
-                    setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-                        { callerId: `DeleteComment${comment.id || commentIndex}`, isComponent: false }
-                    ));
+                    setApiCallStatus((state) => ({
+                        ...state,
+                        apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                            state.apiCallStatus,
+                            { callerId: `DeleteComment${comment.id || commentIndex}`, isComponent: false }
+                        ),
+                    }));
                     callApiDeleteComment(postId, comment.id);
                 } else {
                     onDeleteComment();
@@ -82,9 +86,13 @@ const EditComment = forwardRef(({ postId, commentIndex, commentData, onDeleteCom
         }
 
         const newCommentData = JSON.parse(JSON.stringify(formHelper.getFormData()));
-        setApiCallStatus(ApiCallsHelper.addApiCallToStatus(
-            { callerId: `SaveComment${comment.id || commentIndex}`, isComponent: false }
-        ));
+        setApiCallStatus((state) => ({
+            ...state,
+            apiCallStatus: ApiCallsHelper.addApiCallToStatus(
+                state.apiCallStatus,
+                { callerId: `SaveComment${comment.id || commentIndex}`, isComponent: false }
+            ),
+        }));
 
         if (!comment.id) {
             newCommentData.timestamp = {
@@ -107,9 +115,13 @@ const EditComment = forwardRef(({ postId, commentIndex, commentData, onDeleteCom
             apiCallStatus.ongoing &&
             apiCallStatus.calls.some((call) => call.callerId === `DeleteComment${comment.id || commentIndex}`)
         ) {
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus(
-                `DeleteComment${comment.id || commentIndex}`
-            ));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    `DeleteComment${comment.id || commentIndex}`
+                ),
+            }));
             onDeleteComment(apiDeleteComment);
         }
     }, [apiDeleteComment]);
@@ -126,9 +138,13 @@ const EditComment = forwardRef(({ postId, commentIndex, commentData, onDeleteCom
             }
             setFormData(newCommentData);
             setComment(newCommentData);
-            setApiCallStatus(ApiCallsHelper.removeApiCallFromStatus(
-                `SaveComment${comment.id || commentIndex}`
-            ));
+            setApiCallStatus((state) => ({
+                ...state,
+                apiCallStatus: ApiCallsHelper.removeApiCallFromStatus(
+                    state.apiCallStatus,
+                    `SaveComment${comment.id || commentIndex}`
+                ),
+            }));
         }
     }, [apiAddComment, apiPatchComment]);
 
